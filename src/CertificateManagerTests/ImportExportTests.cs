@@ -21,14 +21,14 @@ namespace CertificateManagerTests
                 new DistinguishedName { CommonName = "root dev", Country = "IT" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 3, "localhost");
-            rootCaL1.FriendlyName = "developement root L1 certificate";
+            //rootCaL1.FriendlyName = "developement root L1 certificate";
 
             // Intermediate L2 chained from root L1
             var intermediateCaL2 = createClientServerAuthCerts.NewIntermediateChainedCertificate(
                 new DistinguishedName { CommonName = "intermediate dev", Country = "FR" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 2, "localhost", rootCaL1);
-            intermediateCaL2.FriendlyName = "developement Intermediate L2 certificate";
+            //intermediateCaL2.FriendlyName = "developement Intermediate L2 certificate";
 
             // Server, Client L3 chained from Intermediate L2
             var serverL3 = createClientServerAuthCerts.NewServerChainedCertificate(
@@ -40,8 +40,8 @@ namespace CertificateManagerTests
                 new DistinguishedName { CommonName = "client", Country = "IE" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 "localhost", intermediateCaL2);
-            serverL3.FriendlyName = "developement server L3 certificate";
-            clientL3.FriendlyName = "developement client L3 certificate";
+            //serverL3.FriendlyName = "developement server L3 certificate";
+            //clientL3.FriendlyName = "developement client L3 certificate";
 
             return (rootCaL1, intermediateCaL2, serverL3, clientL3);
         }

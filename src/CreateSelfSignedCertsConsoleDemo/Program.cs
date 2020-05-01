@@ -19,17 +19,17 @@ namespace CreateSelfSignedCertsConsoleDemo
 
             // Server self signed certificate
             var server = createClientServerAuthCerts.NewServerSelfSignedCertificate(
-                new DistinguishedName { CommonName = "server", Country = "CH" },
+                new DistinguishedName { CommonName = "server", Country = "US" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 dnsName);
 
             // Client self signed certificate
             var client = createClientServerAuthCerts.NewClientSelfSignedCertificate(
-                new DistinguishedName { CommonName = "client", Country = "CH" },
+                new DistinguishedName { CommonName = "client", Country = "US" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 dnsName);
-            server.FriendlyName = "azure server certificate";
-            client.FriendlyName = "azure client certificate";
+            //server.FriendlyName = "azure server certificate";
+            //client.FriendlyName = "azure client certificate";
 
             Console.WriteLine($"Created server certificate {server.FriendlyName}");
 
