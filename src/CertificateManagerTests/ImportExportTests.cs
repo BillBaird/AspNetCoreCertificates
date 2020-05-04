@@ -115,8 +115,14 @@ namespace CertificateManagerTests
                 }
                 catch(Exception ex)
                 {
-                    // internal Internal.Cryptography.CryptoThrowHelper+WindowsCryptographicException : The specified network password is not correct.
-                    Assert.Equal("The specified network password is not correct.", ex.Message);
+                    if (OSHelper.IsWindows())
+                        // internal Internal.Cryptography.CryptoThrowHelper+WindowsCryptographicException : The specified network password is not correct.
+                        Assert.Equal("The specified network password is not correct.", ex.Message);
+                    else if (OSHelper.IsMacOS())
+                        // Interop+AppleCrypto+AppleCommonCryptoCryptographicException : MAC verification failed during PKCS12 import (wrong password?)
+                        Assert.Equal("MAC verification failed during PKCS12 import (wrong password?)", ex.Message);
+                    else
+                        Assert.True(false, "Unhandled OperatingSystem");
                     throw new ArgumentException();
                 }
             });
