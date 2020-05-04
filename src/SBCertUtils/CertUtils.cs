@@ -18,29 +18,7 @@ namespace SBCertUtils
                 Console.WriteLine($"***** cert {certName} *****");
             Console.WriteLine($"Has Private Key = {cert.HasPrivateKey}");
             Console.WriteLine($"PublicKey OID = {cert.PublicKey.Oid.Value}");
-            switch (cert.PublicKey.Oid.Value) {
-                case RSA:
-                    RSA_Label:
-                    RSA rsa = cert.GetRSAPrivateKey(); // or cert.GetRSAPublicKey() when need public key
-                    Console.WriteLine($"Got RSA PrivateKey = {rsa}, SignatureAlgorithm = {rsa.SignatureAlgorithm}, KeyExchangeAlgorithm = {rsa.KeyExchangeAlgorithm}, KeySize = {rsa.KeySize}");
-                    // use the key
-                    break;
-                case DSA:
-                    DSA dsa = cert.GetDSAPrivateKey(); // or cert.GetDSAPublicKey() when need public key
-                    Console.WriteLine($"Got DSA PrivateKey = {dsa}, SignatureAlgorithm = {dsa.SignatureAlgorithm}, KeyExchangeAlgorithm = {dsa.KeyExchangeAlgorithm}, KeySize = {dsa.KeySize}");
-                    // use the key
-                    break;
-                case ECC:
-                    ECDsa ecc = cert.GetECDsaPrivateKey(); // or cert.GetECDsaPublicKey() when need public key
-                    if (ecc == null)
-                    {
-                        Console.WriteLine("ecc was null, will do RSA");
-                        goto RSA_Label;
-                    }
-                    Console.WriteLine($"Got ECC PrivateKey = {ecc}, SignatureAlgorithm = {ecc.SignatureAlgorithm}, KeyExchangeAlgorithm = {ecc.KeyExchangeAlgorithm}, KeySize = {ecc.KeySize}");
-                    // use the key
-                    break;
-            }
+            Console.WriteLine(PrivateKeyDesc(cert));
         }
         
         internal static X509Certificate2 ExportCertificatePublicKey(this X509Certificate2 certificate)
@@ -55,5 +33,47 @@ namespace SBCertUtils
 
         public static string CertPath(string fileName)
             => Path.GetFullPath(Path.Combine(pathToCerts, fileName));
+
+        public static string InterpretAsString(this X509Certificate2 cert, bool verbose = true)
+        {
+            var s = cert.ToString(verbose);
+            s = s.Replace("* (2.5.29.35):", "* X509v3 Authority Key Identifier(2.5.29.35):");
+            s = s.Replace("* (2.5.29.17):", "* X509v3 Subject Alt Name(2.5.29.17):");
+            if (s.Contains("(2.5.29.15):"))
+            {
+                var keyUsage = (X509KeyUsageExtension)cert.Extensions["2.5.29.15"];
+                s = s.Replace("(2.5.29.15):", $"(2.5.29.15):\n  [{keyUsage.KeyUsages.ToString()}]");
+            }
+
+            if (cert.HasPrivateKey)
+                s = s.Replace("[Private Key]\n", $"[Private Key]\n{PrivateKeyDesc(cert)}");
+            
+            return s;
+        }
+
+        private static string PrivateKeyDesc(X509Certificate2 cert)
+        {
+            if (!cert.HasPrivateKey)
+                return null;
+            switch (cert.PublicKey.Oid.Value) {
+                case RSA:
+                    RSA_Label:
+                    RSA rsa = cert.GetRSAPrivateKey(); // or cert.GetRSAPublicKey() when need public key
+                    return $"  RSA PrivateKey: {rsa}\n  SignatureAlgorithm: {rsa.SignatureAlgorithm}\n  KeyExchangeAlgorithm: {rsa.KeyExchangeAlgorithm}\n  KeySize: {rsa.KeySize}";
+                case DSA:
+                    DSA dsa = cert.GetDSAPrivateKey(); // or cert.GetDSAPublicKey() when need public key
+                    return $"  DSA PrivateKey: {dsa}\n  SignatureAlgorithm: {dsa.SignatureAlgorithm}\n  KeyExchangeAlgorithm: {dsa.KeyExchangeAlgorithm}\n  KeySize: {dsa.KeySize}";
+                case ECC:
+                    ECDsa ecc = cert.GetECDsaPrivateKey(); // or cert.GetECDsaPublicKey() when need public key
+                    if (ecc == null)
+                    {
+                        Console.WriteLine("ecc was null, will do RSA");
+                        goto RSA_Label;
+                    }
+                    return $"  ECC PrivateKey = {ecc}\n  SignatureAlgorithm: {ecc.SignatureAlgorithm}\n  KeyExchangeAlgorithm: {ecc.KeyExchangeAlgorithm}\n  KeySize: {ecc.KeySize}";
+                default:
+                    return $"  Unknown PublicKey OID value {cert.PublicKey.Oid.Value} for interpreting Private Key";
+            }
+        }
     }
 }

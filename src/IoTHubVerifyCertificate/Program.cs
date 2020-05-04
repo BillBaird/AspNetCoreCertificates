@@ -27,7 +27,7 @@ namespace IoTHubVerifyCertificate
 
             var deviceVerify = createClientServerAuthCerts.NewDeviceVerificationCertificate(
             "4C8C754C6DA4280DBAB7FC7BB320E7FFFB7F411CBB7EAA7D", root);
-            deviceVerify.FriendlyName = "device verify";
+            //deviceVerify.FriendlyName = "device verify";
 
             var deviceVerifyPEM = importExportCertificate.PemExportPublicKeyCertificate(deviceVerify);
             File.WriteAllText("deviceVerify.pem", deviceVerifyPEM);

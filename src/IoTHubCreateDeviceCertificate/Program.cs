@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using SBCertUtils;
 
 namespace IoTHubCreateDeviceCertificate
 {
@@ -22,6 +23,8 @@ namespace IoTHubCreateDeviceCertificate
 
             var intermediate = new X509Certificate2("intermediate.pfx", "1234");
 
+            Console.WriteLine(intermediate.InterpretAsString());
+            
             // use lowercase for dps
             var testDevice01 = createClientServerAuthCerts.NewDeviceChainedCertificate(
                 new DistinguishedName { CommonName = "testdevice01" },
