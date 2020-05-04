@@ -30,6 +30,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateAngularVueJsDevelopme
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateIdentityServer4Certificates", "CreateIdentityServer4Certificates\CreateIdentityServer4Certificates.csproj", "{C22EB3CB-0F6F-4F64-847B-63E0A75AA999}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBCertUtils", "SBCertUtils\SBCertUtils.csproj", "{A7E93458-B53B-4022-A38A-CC2121FDA814}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sweetbridge", "Sweetbridge", "{8EE0488D-482D-4113-A954-54769691F251}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsymmetricEncrypt", "AsymmetricEncrypt\AsymmetricEncrypt.csproj", "{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsymmetricSign", "AsymmetricSign\AsymmetricSign.csproj", "{82F6B111-B47E-4249-92B4-9416DDC7CCE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsymmetricSignXmlDoc", "AsymmetricSignXmlDoc\AsymmetricSignXmlDoc.csproj", "{BED7947A-BD7A-4D30-94C5-3A349770ABF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertInfo", "CertInfo\CertInfo.csproj", "{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,11 +84,38 @@ Global
 		{C22EB3CB-0F6F-4F64-847B-63E0A75AA999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C22EB3CB-0F6F-4F64-847B-63E0A75AA999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C22EB3CB-0F6F-4F64-847B-63E0A75AA999}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7E93458-B53B-4022-A38A-CC2121FDA814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7E93458-B53B-4022-A38A-CC2121FDA814}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7E93458-B53B-4022-A38A-CC2121FDA814}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7E93458-B53B-4022-A38A-CC2121FDA814}.Release|Any CPU.Build.0 = Release|Any CPU
+		{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82F6B111-B47E-4249-92B4-9416DDC7CCE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82F6B111-B47E-4249-92B4-9416DDC7CCE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82F6B111-B47E-4249-92B4-9416DDC7CCE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82F6B111-B47E-4249-92B4-9416DDC7CCE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BED7947A-BD7A-4D30-94C5-3A349770ABF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BED7947A-BD7A-4D30-94C5-3A349770ABF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BED7947A-BD7A-4D30-94C5-3A349770ABF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BED7947A-BD7A-4D30-94C5-3A349770ABF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AE438041-A9DD-4141-B892-CDC66C8C8D2E}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A7E93458-B53B-4022-A38A-CC2121FDA814} = {8EE0488D-482D-4113-A954-54769691F251}
+		{935B7CFB-31CE-4E5B-80F5-E0E7A2A857EA} = {8EE0488D-482D-4113-A954-54769691F251}
+		{82F6B111-B47E-4249-92B4-9416DDC7CCE1} = {8EE0488D-482D-4113-A954-54769691F251}
+		{BED7947A-BD7A-4D30-94C5-3A349770ABF4} = {8EE0488D-482D-4113-A954-54769691F251}
+		{B02DBCB5-4585-4FEA-918F-8FA791B4FBFC} = {8EE0488D-482D-4113-A954-54769691F251}
 	EndGlobalSection
 EndGlobal
