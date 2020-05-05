@@ -58,6 +58,18 @@ namespace CertificateManager
             return CertificateToPfx(password, certificate, publicKeySigningCert, caCertCollection);
         }
 
+        public byte[] ExportChainedCertificatePfx(string password, X509Certificate2 certificate, X509Certificate2 signingCert, X509Certificate2Collection caCertCollection)
+        {
+            var certs = new X509Certificate2Collection();
+            foreach (var cert in caCertCollection)
+            {
+                if (!cert.Equals(signingCert) && !cert.Equals(certificate))
+                    certs.Add(cert);
+            }
+            var publicKeySigningCert = ExportCertificatePublicKey(signingCert);
+            return CertificateToPfx(password, certificate, publicKeySigningCert, certs);
+        }
+        
         /// <summary>
         /// Exports a certificate as a base64 string in the pem format string
         /// </summary>

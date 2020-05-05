@@ -8,4 +8,8 @@
       <ProjectReference Include="..\CertificateManager\CertificateManager.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
+    </ItemGroup>
+
 </Project>

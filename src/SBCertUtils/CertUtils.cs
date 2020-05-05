@@ -24,7 +24,7 @@ namespace SBCertUtils
             Console.WriteLine(PrivateKeyDesc(cert));
         }
         
-        internal static X509Certificate2 ExportCertificatePublicKey(this X509Certificate2 certificate)
+        public static X509Certificate2 ExportCertificatePublicKey(this X509Certificate2 certificate)
         {
             var publicKeyBytes = certificate.Export(X509ContentType.Cert);
             var signingCertWithoutPrivateKey = new X509Certificate2(publicKeyBytes);
@@ -107,7 +107,6 @@ namespace SBCertUtils
         /// </summary>
         public static List<X509Certificate2> GetTrustChain(this X509Certificate2Collection certs)
         {
-            X509Certificate2 root = null;
             var list = new List<X509Certificate2>(certs.Count);
             foreach (var c in certs)
             {
@@ -123,7 +122,7 @@ namespace SBCertUtils
                 for (int i = parentInx + 1; i < list.Count; i++)
                 {
                     if (list[i].IssuerName.Name.Equals(parent.SubjectName.Name))
-                        if (i != list.Count - 1 && i != parentInx + 1)
+                        if (i != parentInx + 1)
                         {
                             list.Insert(parentInx + 1, list[i]);
                             list.RemoveAt(i + 1);
@@ -134,5 +133,32 @@ namespace SBCertUtils
 
             return list;
         }
+        
+        public static byte[] SignECC(this X509Certificate2 cert, byte[] data)
+        {
+            using var ecc = cert.GetECDsaPrivateKey();
+            // the hash to sign
+            byte[] hash;
+            using (var sha256 = SHA256.Create())
+            {
+                hash = sha256.ComputeHash(data);
+            }
+
+            return ecc.SignHash(hash);
+        }
+
+        public static bool VerifySignatureECC(this X509Certificate2 cert, byte[] data, byte[] signature)
+        {
+            using var ecc = cert.GetECDsaPublicKey();
+            // the hash to verify
+            byte[] hash;
+            using (var sha256 = SHA256.Create())
+            {
+                hash = sha256.ComputeHash(data);
+            }
+            
+            return ecc.VerifyHash(hash, signature);
+        }    
+
     }
 }

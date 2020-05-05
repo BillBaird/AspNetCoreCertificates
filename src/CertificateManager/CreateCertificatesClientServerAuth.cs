@@ -141,6 +141,27 @@ namespace CertificateManager
                 validityPeriod, dnsName, enhancedKeyUsages, parentCertificateAuthority);
         }
 
+        /// <summary>
+        /// Create an device chained certificate for Client and Server TLS Auth
+        /// </summary>
+        /// <param name="distinguishedName">Distinguished Name used for the subject and the issuer properties</param>
+        /// <param name="validityPeriod">Valid from, Valid to certificate properties</param>
+        /// <param name="dnsName">Dns name use the certificate validation</param>
+        /// <param name="parentCertificateAuthority"> Parent cert to create the chain from</param>
+        /// <returns>X509Certificate2 device chained certificate</returns>
+        public X509Certificate2 NewDeviceChainedCertificate(
+            DistinguishedName distinguishedName,
+            ValidityPeriod validityPeriod,
+            string dnsName,
+            X509KeyUsageFlags keyUsageFlags,
+            OidCollection enhancedKeyUsages,
+            X509Certificate2 parentCertificateAuthority)
+        {
+            enhancedKeyUsages ??= new OidCollection();
+
+            return NewDeviceChainedCertificate(distinguishedName,
+                validityPeriod, dnsName, enhancedKeyUsages, parentCertificateAuthority, keyUsageFlags);
+        }
         public X509Certificate2 NewDeviceVerificationCertificate(
            string deviceVerification,
            X509Certificate2 parentCertificateAuthority)
@@ -289,8 +310,9 @@ namespace CertificateManager
            DistinguishedName distinguishedName,
            ValidityPeriod validityPeriod,
            string dnsName,
-           OidCollection enhancedKeyUsages, 
-           X509Certificate2 parentCertificateAuthority)
+           OidCollection enhancedKeyUsages,
+           X509Certificate2 parentCertificateAuthority,
+           X509KeyUsageFlags x509KeyUsageFlags = X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment)
         {
             var basicConstraints = new BasicConstraints
             {
@@ -307,9 +329,6 @@ namespace CertificateManager
                     dnsName,
                 }
             };
-
-            var x509KeyUsageFlags =
-              X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment;
 
             var deviceCert = _createCertificates.NewECDsaChainedCertificate(
                 distinguishedName,
