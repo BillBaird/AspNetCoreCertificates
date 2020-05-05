@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace SBCertUtils
 {
@@ -75,6 +77,62 @@ namespace SBCertUtils
                 default:
                     return $"  Unknown PublicKey OID value {cert.PublicKey.Oid.Value} for interpreting Private Key";
             }
+        }
+
+        public static string ToShortString(this X509Certificate2 cert, int indent = 0)
+        {
+            var nl = Environment.NewLine;
+            var sb = new StringBuilder();
+            var keyUsage = (X509KeyUsageExtension)cert.Extensions["2.5.29.15"];
+            var enhancedKeyUsage =  (X509EnhancedKeyUsageExtension)cert.Extensions["2.5.29.37"];
+            var constraints = (X509BasicConstraintsExtension)cert.Extensions["2.5.29.19"];
+            var subjectAltName = cert.Extensions["2.5.29.17"];
+            var SAN = (new AsnEncodedData(subjectAltName.Oid, subjectAltName.RawData)).Format(false);
+            var spaces = new string(' ', indent);
+            sb.Append(spaces).Append("Subject: ").Append(cert.Subject).Append(nl)
+                .Append(spaces).Append("AltName: ").Append(SAN).Append(nl)
+                .Append(spaces).Append("Issuer: ").Append(cert.Issuer).Append(nl)
+                .Append(spaces).Append("HasPrivateKey: ").Append(cert.HasPrivateKey.ToString()).Append(nl)
+                .Append(spaces).Append("Valid: ").Append(cert.NotBefore).Append(" to ").Append(cert.NotAfter).Append(nl)
+                .Append(spaces).Append("Constraints: CA=").Append(constraints.CertificateAuthority).Append($"{(constraints.HasPathLengthConstraint ? $", PathLength={constraints.PathLengthConstraint}" : null)}").Append(nl)
+                .Append(spaces).Append("Usages: ").Append(keyUsage?.KeyUsages.ToString());
+            foreach (var oid in enhancedKeyUsage.EnhancedKeyUsages)
+                sb.Append(", ").Append(oid.FriendlyName);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Given a X509Certificate2Collection which represents a chain of trust, returns the chain as a list sorted
+        /// with the rootCA first, continuing down the chain in parent/child order.
+        /// </summary>
+        public static List<X509Certificate2> GetTrustChain(this X509Certificate2Collection certs)
+        {
+            X509Certificate2 root = null;
+            var list = new List<X509Certificate2>(certs.Count);
+            foreach (var c in certs)
+            {
+                if (c.SubjectName.Name.Equals(c.IssuerName.Name))
+                    list.Insert(0, c);
+                else
+                    list.Add(c);
+            }
+
+            for (int parentInx = 0; parentInx < list.Count - 1; parentInx++)
+            {
+                var parent = list[parentInx];
+                for (int i = parentInx + 1; i < list.Count; i++)
+                {
+                    if (list[i].IssuerName.Name.Equals(parent.SubjectName.Name))
+                        if (i != list.Count - 1 && i != parentInx + 1)
+                        {
+                            list.Insert(parentInx + 1, list[i]);
+                            list.RemoveAt(i + 1);
+                            break;
+                        }
+                }
+            }
+
+            return list;
         }
     }
 }
