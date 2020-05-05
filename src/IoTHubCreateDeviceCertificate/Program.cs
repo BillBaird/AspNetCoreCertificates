@@ -25,6 +25,10 @@ namespace IoTHubCreateDeviceCertificate
 
             Console.WriteLine(intermediate.InterpretAsString());
             
+            var collection = new X509Certificate2Collection(intermediate);
+            foreach (var c in collection)
+                Console.WriteLine(c.InterpretAsString());
+            
             // use lowercase for dps
             var testDevice01 = createClientServerAuthCerts.NewDeviceChainedCertificate(
                 new DistinguishedName { CommonName = "testdevice01" },

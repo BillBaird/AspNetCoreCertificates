@@ -41,7 +41,7 @@ namespace CreateChainedCertsConsoleDemo
                 RootCertConfig.X509KeyUsageFlags,
                 new ECDsaConfiguration());
 
-            rootCert.FriendlyName = "localhost root l1";
+            //rootCert.FriendlyName = "localhost root l1";
 
             // Create an intermediate chained cert
             var intermediateCertificate = createCertificates.NewECDsaChainedCertificate(
@@ -54,7 +54,7 @@ namespace CreateChainedCertsConsoleDemo
                 IntermediateCertConfig.X509KeyUsageFlags,
                 new ECDsaConfiguration());
 
-            intermediateCertificate.FriendlyName = "intermediate from root l2";
+            //intermediateCertificate.FriendlyName = "intermediate from root l2";
 
             // Create a second intermediate chained cert
             var intermediateCertificateLevel3 = createCertificates.NewECDsaChainedCertificate(
@@ -67,7 +67,7 @@ namespace CreateChainedCertsConsoleDemo
                 IntermediateLevel3CertConfig.X509KeyUsageFlags,
                 new ECDsaConfiguration());
 
-            intermediateCertificateLevel3.FriendlyName = "intermediate l3 from intermediate";
+            //intermediateCertificateLevel3.FriendlyName = "intermediate l3 from intermediate";
 
             // Create a device chained cert
             var deviceCertificate = createCertificates.NewECDsaChainedCertificate(

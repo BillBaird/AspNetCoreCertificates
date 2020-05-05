@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\CHANGELOG.md = ..\CHANGELOG.md
 		..\Documentation.md = ..\Documentation.md
 		..\README.md = ..\README.md
+		..\Linux.md = ..\Linux.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CertificateManagerTests", "CertificateManagerTests\CertificateManagerTests.csproj", "{E84C00DB-DC8F-4E4D-AEDB-B6BF82889D2C}"
