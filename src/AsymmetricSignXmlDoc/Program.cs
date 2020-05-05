@@ -10,6 +10,7 @@ namespace AsymmetricSignXmlDoc
     {
         static void Main(string[] args)
         {
+/*
             var (publicKey, privateKey) = RSAGenerateKeys(2048);
 
             var document = new XmlDocument();
@@ -17,7 +18,9 @@ namespace AsymmetricSignXmlDoc
 
             SignXml(document, privateKey);
             var isValidXmlSignature = VerifyXmlSignature(document, publicKey);
+*/
         }
+/*
 
         static (RSAParameters publicKey, RSAParameters privateKey) RSAGenerateKeys(int keyLength)
         {
@@ -66,5 +69,7 @@ namespace AsymmetricSignXmlDoc
 
                 return signedXml.CheckSignature(rsa);
             }
-        }    }
+        }
+*/            
+    }
 }

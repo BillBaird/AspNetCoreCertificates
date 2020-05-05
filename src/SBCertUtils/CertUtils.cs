@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -39,14 +40,14 @@ namespace SBCertUtils
             var s = cert.ToString(verbose);
             s = s.Replace("* (2.5.29.35):", "* X509v3 Authority Key Identifier(2.5.29.35):");
             s = s.Replace("* (2.5.29.17):", "* X509v3 Subject Alt Name(2.5.29.17):");
-            if (s.Contains("(2.5.29.15):"))
+            if (s.Contains("(2.5.29.15):") && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 var keyUsage = (X509KeyUsageExtension)cert.Extensions["2.5.29.15"];
-                s = s.Replace("(2.5.29.15):", $"(2.5.29.15):\n  [{keyUsage.KeyUsages.ToString()}]");
+                s = s.Replace("(2.5.29.15):", $"(2.5.29.15):{Environment.NewLine}  [{keyUsage.KeyUsages.ToString()}]");
             }
 
             if (cert.HasPrivateKey)
-                s = s.Replace("[Private Key]\n", $"[Private Key]\n{PrivateKeyDesc(cert)}");
+                s = s.Replace($"[Private Key]{Environment.NewLine}", $"[Private Key]{Environment.NewLine}{PrivateKeyDesc(cert)}");
             
             return s;
         }
