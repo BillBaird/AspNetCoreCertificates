@@ -5,6 +5,7 @@ using CertificateManager.Models;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using System.Collections.Generic;
+using SBCertUtils;
 
 namespace CreateChainedCertsConsoleDemo
 {
@@ -53,6 +54,7 @@ namespace CreateChainedCertsConsoleDemo
 
             var rootCertInPfxBtyes = importExportCertificate.ExportRootPfx(password, rootCaL1);
             File.WriteAllBytes("localhost_root_l1.pfx", rootCertInPfxBtyes);
+            Console.WriteLine(rootCaL1.InterpretAsString());
 
             var rootPublicKey = importExportCertificate.ExportCertificatePublicKey(rootCaL1);
             var rootPublicKeyBytes = rootPublicKey.Export(X509ContentType.Cert);
@@ -60,12 +62,15 @@ namespace CreateChainedCertsConsoleDemo
 
             var intermediateCertInPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, intermediateCaL2, rootCaL1);
             File.WriteAllBytes("localhost_intermediate_l2.pfx", intermediateCertInPfxBtyes);
+            Console.WriteLine(intermediateCaL2.InterpretAsString());
 
             var serverCertL3InPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, serverL3, intermediateCaL2);
             File.WriteAllBytes("serverl3.pfx", serverCertL3InPfxBtyes);
+            Console.WriteLine(serverL3.InterpretAsString());
 
             var clientCertL3InPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, clientL3, intermediateCaL2);
             File.WriteAllBytes("clientl3.pfx", clientCertL3InPfxBtyes);
+            Console.WriteLine(clientL3.InterpretAsString());
 
             Console.WriteLine("Certificates exported to pfx and cer files");
         }
