@@ -54,25 +54,46 @@ namespace CreateChainedCertsConsoleDemo
 
             var rootCertInPfxBtyes = importExportCertificate.ExportRootPfx(password, rootCaL1);
             File.WriteAllBytes("localhost_root_l1.pfx", rootCertInPfxBtyes);
+            Console.WriteLine($"***** localhost_root_l1.pfx *****");
             Console.WriteLine(rootCaL1.InterpretAsString());
 
             var rootPublicKey = importExportCertificate.ExportCertificatePublicKey(rootCaL1);
             var rootPublicKeyBytes = rootPublicKey.Export(X509ContentType.Cert);
             File.WriteAllBytes($"localhost_root_l1.cer", rootPublicKeyBytes);
 
+            Console.ReadLine();
             var intermediateCertInPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, intermediateCaL2, rootCaL1);
             File.WriteAllBytes("localhost_intermediate_l2.pfx", intermediateCertInPfxBtyes);
+            Console.WriteLine($"***** localhost_intermediate_l2.pfx *****");
             Console.WriteLine(intermediateCaL2.InterpretAsString());
 
+            Console.ReadLine();
             var serverCertL3InPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, serverL3, intermediateCaL2);
             File.WriteAllBytes("serverl3.pfx", serverCertL3InPfxBtyes);
+            Console.WriteLine($"***** serverl3.pfx *****");
             Console.WriteLine(serverL3.InterpretAsString());
 
+            Console.ReadLine();
             var clientCertL3InPfxBtyes = importExportCertificate.ExportChainedCertificatePfx(password, clientL3, intermediateCaL2);
             File.WriteAllBytes("clientl3.pfx", clientCertL3InPfxBtyes);
+            Console.WriteLine($"***** clientl3.pfx *****");
             Console.WriteLine(clientL3.InterpretAsString());
 
             Console.WriteLine("Certificates exported to pfx and cer files");
+            
+            Console.ReadLine();
+            var pfxBytes = File.ReadAllBytes("clientl3.pfx");
+            var cert = new X509Certificate2(pfxBytes, password);
+            Console.WriteLine($"***** cert.pfx (having been read up) *****");
+            Console.WriteLine(cert.InterpretAsString());
+
+            var certs = new X509Certificate2Collection();
+            certs.Import(pfxBytes, password, X509KeyStorageFlags.EphemeralKeySet);
+            foreach (var c in certs)
+            {
+                Console.ReadLine();
+                Console.WriteLine(c.InterpretAsString());
+            }
         }
     }
 }
