@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using CertificateManager;
@@ -29,10 +30,26 @@ namespace Simulation
                 new DistinguishedName { CommonName = "sbCertificateAuthority", Country = "GB" },
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 3, "localhost");
-            //Console.WriteLine(sbCa.ToShortString());
+            Console.WriteLine(sbCa.ToShortString());
             //Console.ReadLine();
             //Console.WriteLine(sbCa.InterpretAsString());
             
+            var builder = new Pkcs12Builder();
+            var contents = new Pkcs12SafeContents();
+            var certBag = contents.AddCertificate(sbCa);
+            var keyBag = contents.AddKeyUnencrypted(sbCa.GetECDsaPrivateKey());
+            builder.AddSafeContentsUnencrypted(contents);
+
+            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
+            builder.SealWithMac(password, HashAlgorithmName.SHA256, 1);
+            var pkcs12bytes = builder.Encode();
+
+            var info = Pkcs12Info.Decode(pkcs12bytes, out var bytesConsumed, false);
+            Console.WriteLine($"Encoded len = {pkcs12bytes.Length}, consumed = {bytesConsumed}");
+            Console.WriteLine($"MAC Verified = {info.VerifyMac(password)}");
+            var outCert = new X509Certificate2(pkcs12bytes, password);
+            Console.WriteLine(outCert.ToShortString());
+
             // Export SB Root Certificate Authority as PFX
             var rootCertInPfxBytes = iec.ExportRootPfx(password, sbCa);
             var fileName = "sbCertificateAuthority.pfx";
@@ -111,6 +128,36 @@ namespace Simulation
             Console.WriteLine($"Data:{ByteArrayToString(msg)}, Signature:{ByteArrayToString(sig)}");
             Console.WriteLine($"Verified = {depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig)}");
         }
+
+        /*
+        public static X509Certificate2 CreateCertificateWithPrivateKey(
+            X509Certificate2 certificate, 
+            AsymmetricAlgorithm privateKey, 
+            string password = null)
+        {
+            var builder = new Pkcs12Builder();
+            var contents = new Pkcs12SafeContents();
+            var certBag = contents.AddCertificate(certificate);
+            var keyBag = contents.AddKeyUnencrypted(privateKey);
+            builder.AddSafeContentsUnencrypted(contents);
+
+            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
+            builder.SealWithMac(password, HashAlgorithmName.SHA256, 1);
+            var pkcs12bytes = builder.Encode();
+
+            if (string.IsNullOrEmpty(password))
+            {
+                var certificateOut = new X509Certificate2(pkcs12bytes);
+                return certificateOut;
+            }
+            else
+            {
+                var certificateOut = new X509Certificate2(pkcs12bytes, password);
+                return certificateOut;
+            }
+        }
+        */
+
         
         static string ByteArrayToString(byte[] byteArray)
         {
