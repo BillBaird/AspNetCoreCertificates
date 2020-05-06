@@ -68,7 +68,7 @@ namespace Simulation
                 X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.NonRepudiation,
                 null,
                 sbDrs);
-            //Console.WriteLine(testDevice01.ToShortString());
+            Console.WriteLine(testDevice01.ToShortString());
 
             Console.WriteLine("-----------------");
             var sbDeviceBytes = iec.ExportChainedCertificatePfx(password, testDevice01, sbDrs, certs);
