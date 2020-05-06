@@ -41,13 +41,14 @@ namespace Simulation
             var fileName = "sbCertificateAuthority.pfx";
             File.WriteAllBytes(fileName, rootCertInPfxBytes);
 
-            var info = Pkcs12Info.Decode(rootCertInPfxBytes, out var bytesConsumed, false);
+            // Load the certificate back from the bytes and verify that it works
+            var rootInfo = Pkcs12Info.Decode(rootCertInPfxBytes, out var bytesConsumed, false);
             Console.WriteLine($"Encoded len = {rootCertInPfxBytes.Length}, consumed = {bytesConsumed}");
-            Console.WriteLine($"MAC Verified = {info.VerifyMac(password)}");
-            var outCert = new X509Certificate2(rootCertInPfxBytes, password);
-            Console.WriteLine(outCert.ToShortString());
-            //Console.WriteLine(outCert.InterpretAsString());
-            SignAndVerify(outCert, sbCa);
+            Console.WriteLine($"MAC Verified = {rootInfo.VerifyMac(password)}");
+            var sbCAFromBytes = new X509Certificate2(rootCertInPfxBytes, password);
+            Console.WriteLine(sbCAFromBytes.ToShortString());
+            //Console.WriteLine(sbCAFromBytes.InterpretAsString());
+            SignAndVerify(sbCAFromBytes, sbCa);
 
             // Create SB Device Registration Service Intermediate Certificate
             var sbDrs = cc.NewIntermediateChainedCertificate(
