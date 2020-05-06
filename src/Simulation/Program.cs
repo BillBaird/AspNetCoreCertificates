@@ -36,20 +36,18 @@ namespace Simulation
             //Console.WriteLine(sbCa.InterpretAsString());
             SignAndVerify(sbCa);
             
-            var pkcs12bytes = CertUtils.ExportWithPrivateKey(sbCa, password, password);
+            // Export SB Root Certificate Authority as PFX
+            var rootCertInPfxBytes = CertUtils.ExportWithPrivateKey(sbCa, password, password);
+            var fileName = "sbCertificateAuthority.pfx";
+            File.WriteAllBytes(fileName, rootCertInPfxBytes);
 
-            var info = Pkcs12Info.Decode(pkcs12bytes, out var bytesConsumed, false);
-            Console.WriteLine($"Encoded len = {pkcs12bytes.Length}, consumed = {bytesConsumed}");
+            var info = Pkcs12Info.Decode(rootCertInPfxBytes, out var bytesConsumed, false);
+            Console.WriteLine($"Encoded len = {rootCertInPfxBytes.Length}, consumed = {bytesConsumed}");
             Console.WriteLine($"MAC Verified = {info.VerifyMac(password)}");
-            var outCert = new X509Certificate2(pkcs12bytes, password);
+            var outCert = new X509Certificate2(rootCertInPfxBytes, password);
             Console.WriteLine(outCert.ToShortString());
             //Console.WriteLine(outCert.InterpretAsString());
             SignAndVerify(outCert, sbCa);
-
-            // Export SB Root Certificate Authority as PFX
-            var rootCertInPfxBytes = iec.ExportRootPfx(password, sbCa);
-            var fileName = "sbCertificateAuthority.pfx";
-            File.WriteAllBytes(fileName, rootCertInPfxBytes);
 
             // Create SB Device Registration Service Intermediate Certificate
             var sbDrs = cc.NewIntermediateChainedCertificate(
