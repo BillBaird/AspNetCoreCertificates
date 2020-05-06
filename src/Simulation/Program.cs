@@ -60,10 +60,8 @@ namespace Simulation
             //Console.ReadLine();
             //Console.WriteLine(sbDrs.InterpretAsString());
 
-            var sbDrsBytes = CertUtils.ExportTrustChainWithPrivateKey(password, password, sbDrs, sbCAFromBytes);
-            
             // Export SB Device Registration Service Intermediate Certificate Chain as PFX
-            //var sbDrsBytes = iec.ExportChainedCertificatePfx(password, sbDrs, sbCa);
+            var sbDrsBytes = CertUtils.ExportTrustChainWithPrivateKey(password, password, sbDrs, sbCAFromBytes);
             fileName = "sbDeviceRegistrationService.pfx";
             File.WriteAllBytes(fileName, sbDrsBytes);
             Console.WriteLine($"Exported {fileName}");
@@ -90,27 +88,14 @@ namespace Simulation
             Console.WriteLine(testDevice01.ToShortString());
 
             Console.WriteLine("-----------------");
-            var sbDeviceBytes = iec.ExportChainedCertificatePfx(password, testDevice01, sbDrs, certs);
+            var sbDeviceBytes = CertUtils.ExportTrustChainWithPrivateKey(password, password, testDevice01, sbDrsFromBytes, sbCAFromBytes);
             certs = new X509Certificate2Collection();
-            certs.Import(sbDeviceBytes, password, X509KeyStorageFlags.EphemeralKeySet);        
+            certs.Import(sbDeviceBytes, password, X509KeyStorageFlags.Exportable);        
             trustChain = certs.GetTrustChain();
             for (var i = 0; i < trustChain.Count; i++)
                 Console.WriteLine(trustChain[i].ToShortString(i * 4));
-
-            var testDevice01PublicKey = iec.ExportCertificatePublicKey(testDevice01);
-            var testDevice01PublicKeyBytes = testDevice01PublicKey.Export(X509ContentType.Cert);
-            
-            // Sign with device private key
-            var msg = new byte[] {1, 2, 3};
-            var sig = testDevice01.SignECC(msg);
-            Console.WriteLine($"Data:{ByteArrayToString(msg)}, Signature:{ByteArrayToString(sig)}");
-            
-            // Verify the signature using only a depersisted form of the devices public key.  This is what would be
-            // stored on the device record (the private key is only in the device) and is how we verify the message is
-            // from the device.
-            var depersistedTestDevice01PubKey = new X509Certificate2(testDevice01PublicKeyBytes);
-            //Console.WriteLine(depersistedTestDevice01PubKey.ToShortString());
-            Console.WriteLine($"Verified = {depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig)}");
+            var testDevice01FromBytes = trustChain.Last();
+            SignAndVerify(testDevice01FromBytes, testDevice01);
             
             // Get device from chain
             X509Certificate2 deviceFromPfx = null;
@@ -122,40 +107,8 @@ namespace Simulation
                     break;
                 }
             }
-            Console.WriteLine(deviceFromPfx.ToShortString());
-            sig = deviceFromPfx.SignECC(msg);
-            Console.WriteLine($"Data:{ByteArrayToString(msg)}, Signature:{ByteArrayToString(sig)}");
-            Console.WriteLine($"Verified = {depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig)}");
+            SignAndVerify(deviceFromPfx, testDevice01);
         }
-
-        /*
-        public static X509Certificate2 CreateCertificateWithPrivateKey(
-            X509Certificate2 certificate, 
-            AsymmetricAlgorithm privateKey, 
-            string password = null)
-        {
-            var builder = new Pkcs12Builder();
-            var contents = new Pkcs12SafeContents();
-            var certBag = contents.AddCertificate(certificate);
-            var keyBag = contents.AddKeyUnencrypted(privateKey);
-            builder.AddSafeContentsUnencrypted(contents);
-
-            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
-            builder.SealWithMac(password, HashAlgorithmName.SHA256, 1);
-            var pkcs12bytes = builder.Encode();
-
-            if (string.IsNullOrEmpty(password))
-            {
-                var certificateOut = new X509Certificate2(pkcs12bytes);
-                return certificateOut;
-            }
-            else
-            {
-                var certificateOut = new X509Certificate2(pkcs12bytes, password);
-                return certificateOut;
-            }
-        }
-        */
 
         static bool SignAndVerify(X509Certificate2 cert)
         {
