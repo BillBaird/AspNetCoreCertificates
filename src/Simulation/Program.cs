@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -37,7 +38,7 @@ namespace Simulation
             SignAndVerify(sbCa);
             
             // Export SB Root Certificate Authority as PFX
-            var rootCertInPfxBytes = CertUtils.ExportWithPrivateKey(sbCa, password, password);
+            var rootCertInPfxBytes = CertUtils.ExportTrustChainWithPrivateKey(password, password, sbCa);
             var fileName = "sbCertificateAuthority.pfx";
             File.WriteAllBytes(fileName, rootCertInPfxBytes);
 
@@ -58,9 +59,11 @@ namespace Simulation
             //Console.WriteLine(sbDrs.ToShortString());
             //Console.ReadLine();
             //Console.WriteLine(sbDrs.InterpretAsString());
+
+            var sbDrsBytes = CertUtils.ExportTrustChainWithPrivateKey(password, password, sbDrs, sbCAFromBytes);
             
             // Export SB Device Registration Service Intermediate Certificate Chain as PFX
-            var sbDrsBytes = iec.ExportChainedCertificatePfx(password, sbDrs, sbCa);
+            //var sbDrsBytes = iec.ExportChainedCertificatePfx(password, sbDrs, sbCa);
             fileName = "sbDeviceRegistrationService.pfx";
             File.WriteAllBytes(fileName, sbDrsBytes);
             Console.WriteLine($"Exported {fileName}");
@@ -71,6 +74,7 @@ namespace Simulation
             var trustChain = certs.GetTrustChain();
             for (var i = 0; i < trustChain.Count; i++)
                 Console.WriteLine(trustChain[i].ToShortString(i * 4));
+            var sbDrsFromBytes = trustChain.Last();
             
             // Create device certificate
             var testDevice01 = cc.NewDeviceChainedCertificate(
@@ -82,7 +86,7 @@ namespace Simulation
                     new Oid("1.3.6.1.5.5.7.3.2"), // TLS Client auth
                     new Oid("1.3.6.1.5.5.7.3.1")  // TLS Server auth
                 },
-                sbDrs);
+                sbDrsFromBytes);
             Console.WriteLine(testDevice01.ToShortString());
 
             Console.WriteLine("-----------------");

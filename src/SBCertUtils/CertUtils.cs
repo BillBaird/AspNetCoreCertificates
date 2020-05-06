@@ -98,10 +98,27 @@ namespace SBCertUtils
                 .Append(spaces).Append("Constraints: CA=").Append(constraints.CertificateAuthority).Append($"{(constraints.HasPathLengthConstraint ? $", PathLength={constraints.PathLengthConstraint}" : null)}").Append(nl)
                 .Append(spaces).Append("Usages: ").Append(keyUsage?.KeyUsages.ToString());
             foreach (var oid in enhancedKeyUsage.EnhancedKeyUsages)
-                sb.Append(", ").Append(oid.FriendlyName);
+                sb.Append(", ").Append(EnhancedKeyUsageName(oid));
             return sb.ToString();
         }
 
+        public static string EnhancedKeyUsageName(this Oid oid)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                switch (oid.Value)
+                {
+                    case "1.3.6.1.5.5.7.3.2":
+                        return "TLS Client Authentication";
+                    case "1.3.6.1.5.5.7.3.1":
+                        return "TLS Server Authentication";
+                    case "x": return "x";
+                    default: 
+                        return oid.Value;
+                }
+            else
+                return oid.FriendlyName;
+        }
+        
         /// <summary>
         /// Given a X509Certificate2Collection which represents a chain of trust, returns the chain as a list sorted
         /// with the rootCA first, continuing down the chain in parent/child order.
@@ -167,6 +184,26 @@ namespace SBCertUtils
             var contents = new Pkcs12SafeContents();
             var certBag = contents.AddCertificate(cert);
             var keyBag = contents.AddShroudedKey(cert.GetECDsaPrivateKey(), privateKeyPassword, new PbeParameters(PbeEncryptionAlgorithm.TripleDes3KeyPkcs12, HashAlgorithmName.SHA1, 2000));
+            builder.AddSafeContentsUnencrypted(contents);
+
+            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
+            // See hash algorithm comment at the end of
+            // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.pkcs.pkcs12builder.sealwithmac?view=dotnet-plat-ext-3.1
+            // SHA1 is used since using SHA2565 here does not work on OSX.
+            builder.SealWithMac(pkcs12Password, HashAlgorithmName.SHA1, 2000);
+            return builder.Encode();
+        }
+
+        public static byte[] ExportTrustChainWithPrivateKey(string privateKeyPassword, string pkcs12Password, params X509Certificate2[] cert)
+        {
+            var builder = new Pkcs12Builder();
+            var contents = new Pkcs12SafeContents();
+            for (int i = 0; i < cert.Length; i++)
+            {
+                contents.AddCertificate(cert[i]);
+                if (i == 0)
+                    contents.AddShroudedKey(cert[i].GetECDsaPrivateKey(), privateKeyPassword, new PbeParameters(PbeEncryptionAlgorithm.TripleDes3KeyPkcs12, HashAlgorithmName.SHA1, 2000));
+            }
             builder.AddSafeContentsUnencrypted(contents);
 
             // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
