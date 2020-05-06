@@ -55,7 +55,7 @@ namespace Simulation
 
             // Show the DRS trust chain from the bytes which were exported 
             var certs = new X509Certificate2Collection();
-            certs.Import(sbDrsBytes, password, X509KeyStorageFlags.EphemeralKeySet);
+            certs.Import(sbDrsBytes, password, X509KeyStorageFlags.UserKeySet);
             var trustChain = certs.GetTrustChain();
             for (var i = 0; i < trustChain.Count; i++)
                 Console.WriteLine(trustChain[i].ToShortString(i * 4));
