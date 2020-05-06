@@ -316,7 +316,7 @@ namespace CertificateManager
         {
             var basicConstraints = new BasicConstraints
             {
-                CertificateAuthority = true,
+                CertificateAuthority = false,
                 HasPathLengthConstraint = false,
                 PathLengthConstraint = 0,
                 Critical = true

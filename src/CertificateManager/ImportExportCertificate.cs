@@ -222,6 +222,9 @@ namespace CertificateManager
                 certCollection.Add(signingCertWithoutPrivateKey);
             }
 
+            foreach (var c in certCollection)
+                Console.WriteLine($"{c.SubjectName.Name}, HasPrivateKey={c.HasPrivateKey}");
+            
             return certCollection.Export(X509ContentType.Pkcs12, password);
         }
 
