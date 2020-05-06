@@ -194,6 +194,15 @@ namespace SBCertUtils
             return builder.Encode();
         }
 
+        /// <summary>
+        /// Exports one or more certificates in PKCS12 format representing a chain of trust.  The certificates should start with the leaf
+        /// node of the trust tree working their way up to the root CA.
+        ///
+        /// Note that this implementation is for ECDsa keys.
+        /// </summary>
+        /// <param name="privateKeyPassword">A password used to shroud the private key of the leaf certificate</param>
+        /// <param name="pkcs12Password">A password using to seal the exported PKCS12 bytes</param>
+        /// <param name="cert">A set of one or more certificates with the leaf node (the one which for which the private key should be included) given first.</param>
         public static byte[] ExportTrustChainWithPrivateKey(string privateKeyPassword, string pkcs12Password, params X509Certificate2[] cert)
         {
             var builder = new Pkcs12Builder();
