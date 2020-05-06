@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -158,7 +159,23 @@ namespace SBCertUtils
             }
             
             return ecc.VerifyHash(hash, signature);
-        }    
+        }
 
+        public static byte[] ExportWithPrivateKey(X509Certificate2 cert, string privateKeyPassword, string pkcs12Password)
+        {
+            var builder = new Pkcs12Builder();
+            var contents = new Pkcs12SafeContents();
+            var certBag = contents.AddCertificate(cert);
+            var keyBag = contents.AddShroudedKey(cert.GetECDsaPrivateKey(), privateKeyPassword, new PbeParameters(PbeEncryptionAlgorithm.TripleDes3KeyPkcs12, HashAlgorithmName.SHA1, 2000));
+            builder.AddSafeContentsUnencrypted(contents);
+
+            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
+            // See hash algorithm comment at the end of
+            // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.pkcs.pkcs12builder.sealwithmac?view=dotnet-plat-ext-3.1
+            // SHA1 is used since using SHA2565 here does not work on OSX.
+            builder.SealWithMac(pkcs12Password, HashAlgorithmName.SHA1, 2000);
+            return builder.Encode();
+        }
+        
     }
 }

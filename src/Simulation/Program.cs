@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -15,6 +13,9 @@ namespace Simulation
 {
     class Program
     {
+        private static CreateCertificatesClientServerAuth cc;
+        private static ImportExportCertificate iec;
+        
         static void Main(string[] args)
         {
             var serviceProvider = new ServiceCollection()
@@ -22,8 +23,8 @@ namespace Simulation
                 .BuildServiceProvider();
 
             string password = "1234";
-            var cc = serviceProvider.GetService<CreateCertificatesClientServerAuth>();
-            var iec = serviceProvider.GetService<ImportExportCertificate>();
+            cc = serviceProvider.GetService<CreateCertificatesClientServerAuth>();
+            iec = serviceProvider.GetService<ImportExportCertificate>();
             
             // Create SB Root Certificate Authority
             var sbCa = cc.NewRootCertificate(
@@ -33,22 +34,17 @@ namespace Simulation
             Console.WriteLine(sbCa.ToShortString());
             //Console.ReadLine();
             //Console.WriteLine(sbCa.InterpretAsString());
+            SignAndVerify(sbCa);
             
-            var builder = new Pkcs12Builder();
-            var contents = new Pkcs12SafeContents();
-            var certBag = contents.AddCertificate(sbCa);
-            var keyBag = contents.AddKeyUnencrypted(sbCa.GetECDsaPrivateKey());
-            builder.AddSafeContentsUnencrypted(contents);
-
-            // OpenSSL requires the file to have a mac, without mac this will run on Windows but not on Linux
-            builder.SealWithMac(password, HashAlgorithmName.SHA256, 1);
-            var pkcs12bytes = builder.Encode();
+            var pkcs12bytes = CertUtils.ExportWithPrivateKey(sbCa, password, password);
 
             var info = Pkcs12Info.Decode(pkcs12bytes, out var bytesConsumed, false);
             Console.WriteLine($"Encoded len = {pkcs12bytes.Length}, consumed = {bytesConsumed}");
             Console.WriteLine($"MAC Verified = {info.VerifyMac(password)}");
             var outCert = new X509Certificate2(pkcs12bytes, password);
             Console.WriteLine(outCert.ToShortString());
+            //Console.WriteLine(outCert.InterpretAsString());
+            SignAndVerify(outCert, sbCa);
 
             // Export SB Root Certificate Authority as PFX
             var rootCertInPfxBytes = iec.ExportRootPfx(password, sbCa);
@@ -158,6 +154,33 @@ namespace Simulation
         }
         */
 
+        static bool SignAndVerify(X509Certificate2 cert)
+        {
+            return SignAndVerify(cert, iec.ExportCertificatePublicKey(cert).Export(X509ContentType.Cert));
+        }
+
+        static bool SignAndVerify(X509Certificate2 signingCert, X509Certificate2 verifyingCert)
+        {
+            return SignAndVerify(signingCert, iec.ExportCertificatePublicKey(verifyingCert).Export(X509ContentType.Cert));
+        }
+        
+        static bool SignAndVerify(X509Certificate2 cert, byte[] publicKeyBytes)
+        {
+            // Sign with device private key
+            var msg = new byte[] {1, 2, 3};
+            var sig = cert.SignECC(msg);
+            Console.WriteLine($"Data:{ByteArrayToString(msg)}, Signature:{ByteArrayToString(sig)}");
+            
+            // Verify the signature using only a depersisted form of the devices public key.  This is what would be
+            // stored on the device record (the private key is only in the device) and is how we verify the message is
+            // from the device.
+            var depersistedTestDevice01PubKey = new X509Certificate2(publicKeyBytes);
+            //Console.WriteLine(depersistedTestDevice01PubKey.ToShortString());
+            var verified = depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig);
+            Console.WriteLine($"Signature Verified = {verified}");
+            return verified;
+        }
+        
         
         static string ByteArrayToString(byte[] byteArray)
         {
