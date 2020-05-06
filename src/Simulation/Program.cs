@@ -92,6 +92,21 @@ namespace Simulation
             var depersistedTestDevice01PubKey = new X509Certificate2(testDevice01PublicKeyBytes);
             //Console.WriteLine(depersistedTestDevice01PubKey.ToShortString());
             Console.WriteLine($"Verified = {depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig)}");
+            
+            // Get device from chain
+            X509Certificate2 deviceFromPfx = null;
+            foreach (var c in certs)
+            {
+                if ("CN=testdevice01".Equals(c.SubjectName.Name))
+                {
+                    deviceFromPfx = c;
+                    break;
+                }
+            }
+            Console.WriteLine(deviceFromPfx.ToShortString());
+            sig = deviceFromPfx.SignECC(msg);
+            Console.WriteLine($"Data:{ByteArrayToString(msg)}, Signature:{ByteArrayToString(sig)}");
+            Console.WriteLine($"Verified = {depersistedTestDevice01PubKey.VerifySignatureECC(msg, sig)}");
         }
         
         static string ByteArrayToString(byte[] byteArray)
