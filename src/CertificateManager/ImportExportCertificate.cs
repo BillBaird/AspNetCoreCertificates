@@ -211,16 +211,15 @@ namespace CertificateManager
             X509Certificate2Collection chain)
         {
             var certCollection = new X509Certificate2Collection(certificate);
+            if (chain != null)
+            {
+                certCollection.AddRange(chain);
+            }
 
             if (signingCertificate != null)
             {
                 var signingCertWithoutPrivateKey = ExportCertificatePublicKey(signingCertificate);
                 certCollection.Add(signingCertWithoutPrivateKey);
-            }
-
-            if (chain != null)
-            {
-                certCollection.AddRange(chain);
             }
 
             return certCollection.Export(X509ContentType.Pkcs12, password);
