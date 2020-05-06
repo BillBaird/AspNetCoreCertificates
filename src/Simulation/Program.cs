@@ -80,10 +80,7 @@ namespace Simulation
                 new ValidityPeriod { ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddYears(10) },
                 "testdevice01", 
                 X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.NonRepudiation,
-                new OidCollection {
-                    new Oid("1.3.6.1.5.5.7.3.2"), // TLS Client auth
-                    new Oid("1.3.6.1.5.5.7.3.1")  // TLS Server auth
-                },
+                null,
                 sbDrsFromBytes);
             Console.WriteLine(testDevice01.ToShortString());
 
