@@ -10,11 +10,15 @@ namespace AsymetricEncrypt
             var data = new byte[] { 1, 2, 3 };
             var (rsaPublicKey, rsaPrivateKey) = RSAGenerateKeys(2048);
            
-            Console.WriteLine(rsaPublicKey.ToString());
-            
             var encryptedData = Encrypt(data, rsaPublicKey);
             var decryptedData = Decrypt(encryptedData, rsaPrivateKey);
-            if (decryptedData[1] != data[1])
+            if (decryptedData.Length != data.Length || decryptedData[1] != data[1])
+                Console.WriteLine("Did not work");
+            
+            (rsaPublicKey, rsaPrivateKey) = RSAGenerateKeysDeserialized(2048);
+            encryptedData = Encrypt(data, rsaPublicKey);
+            decryptedData = Decrypt(encryptedData, rsaPrivateKey);
+            if (decryptedData.Length != data.Length || decryptedData[1] != data[1])
                 Console.WriteLine("Did not work");
         }
 
@@ -26,6 +30,37 @@ namespace AsymetricEncrypt
                 return (
                     publicKey: rsa.ExportParameters(includePrivateParameters: false),
                     privateKey: rsa.ExportParameters(includePrivateParameters: true)
+                );
+            }
+        }
+
+        static (RSAParameters publicKey, RSAParameters privateKey) RSAGenerateKeysDeserialized(int keyLength)
+        {
+            using (var rsa = RSA.Create())
+            {
+                rsa.KeySize = keyLength;
+                //var bytes = rsa.ExportSubjectPublicKeyInfo();
+                
+                // Export and Import Public Key
+                var keyBytes = rsa.ExportRSAPublicKey();
+                var keyB64 = Convert.ToBase64String(keyBytes, Base64FormattingOptions.InsertLineBreaks);    // Can be hardcoded in app
+                Console.WriteLine(keyB64);
+                var keyBytesDecoded = Convert.FromBase64String(keyB64);
+                var rehydratedRsaPubKey = RSA.Create();
+                rehydratedRsaPubKey.ImportRSAPublicKey(keyBytesDecoded, out var pubBytesRead);
+                
+                Console.WriteLine();
+                // Export and Import Private Key
+                keyBytes = rsa.ExportRSAPrivateKey();
+                keyB64 = Convert.ToBase64String(keyBytes, Base64FormattingOptions.InsertLineBreaks);    // Can be hardcoded in app
+                Console.WriteLine(keyB64);
+                keyBytesDecoded = Convert.FromBase64String(keyB64);
+                var rehydratedRsaPrivateKey = RSA.Create();
+                rehydratedRsaPrivateKey.ImportRSAPrivateKey(keyBytesDecoded, out var privateBytesRead);
+                
+                return (
+                    publicKey: rehydratedRsaPubKey.ExportParameters(includePrivateParameters: false),
+                    privateKey: rehydratedRsaPrivateKey.ExportParameters(includePrivateParameters: true)
                 );
             }
         }
@@ -50,12 +85,12 @@ namespace AsymetricEncrypt
             }
         }
         
-        /*
         static (ECParameters publicKey, ECParameters privateKey) ECDsaGenerateKeys(int keyLength)
         {
             using (var ecd = ECDsa.Create())
             {
                 ecd.KeySize = keyLength;
+                var bytes = ecd.ExportSubjectPublicKeyInfo();
                 return (
                     publicKey: ecd.ExportParameters(includePrivateParameters: false),
                     privateKey: ecd.ExportParameters(includePrivateParameters: true)
@@ -63,6 +98,7 @@ namespace AsymetricEncrypt
             }
         }
 
+        /*
         static byte[] Encrypt(byte[] data, ECParameters publicKey)
         {
             using (var ecd = ECDsa.Create())

@@ -21,6 +21,13 @@ namespace AsymmetricSign
             isValid = VerifySignature(data, signedData, ecdPublicKey);
             if (!isValid)
                 Console.WriteLine("ECDsa Signature Failed");
+            
+            (ecdPublicKey, ecdPrivateKey) = ECDsaGenerateKeysDeserialized(256);
+            
+            signedData = Sign(data, ecdPrivateKey);
+            isValid = VerifySignature(data, signedData, ecdPublicKey);
+            if (!isValid)
+                Console.WriteLine("ECDsa Signature Failed");
         }
 
         static (RSAParameters publicKey, RSAParameters privateKey) RSAGenerateKeys(int keyLength)
@@ -80,6 +87,33 @@ namespace AsymmetricSign
                 return (
                     publicKey: ecd.ExportParameters(includePrivateParameters: false),
                     privateKey: ecd.ExportParameters(includePrivateParameters: true)
+                );
+            }
+        }
+
+        static (ECParameters publicKey, ECParameters privateKey) ECDsaGenerateKeysDeserialized(int keyLength)
+        {
+            using (var ecd = ECDsa.Create())
+            {
+                ecd.KeySize = keyLength;
+                var keyBytes = ecd.ExportSubjectPublicKeyInfo();
+                var keyB64 = Convert.ToBase64String(keyBytes, Base64FormattingOptions.InsertLineBreaks);    // Can be hardcoded in app
+                Console.WriteLine(keyB64);
+                var keyBytesDecoded = Convert.FromBase64String(keyB64);
+                var rehydratedEcdPubKey = ECDsa.Create();
+                rehydratedEcdPubKey.ImportSubjectPublicKeyInfo(keyBytesDecoded, out var pubBytesRead);
+                
+                Console.WriteLine();
+                keyBytes = ecd.ExportECPrivateKey();
+                keyB64 = Convert.ToBase64String(keyBytes, Base64FormattingOptions.InsertLineBreaks);    // Can be hardcoded in app
+                Console.WriteLine(keyB64);
+                keyBytesDecoded = Convert.FromBase64String(keyB64);
+                var rehydratedEcdPrivateKey = ECDsa.Create();
+                rehydratedEcdPrivateKey.ImportECPrivateKey(keyBytesDecoded, out var privateBytesRead);
+                
+                return (
+                    publicKey: rehydratedEcdPubKey.ExportParameters(includePrivateParameters: false),
+                    privateKey: rehydratedEcdPrivateKey.ExportParameters(includePrivateParameters: true)
                 );
             }
         }
